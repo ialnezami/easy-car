@@ -63,6 +63,9 @@ export default async function ReservationsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -84,6 +87,9 @@ export default async function ReservationsPage() {
                         </div>
                         <div className="text-sm text-gray-500">
                           {reservation.customerEmail}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {reservation.customerPhone}
                         </div>
                       </div>
                     </td>
@@ -117,6 +123,58 @@ export default async function ReservationsPage() {
                       >
                         {reservation.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {reservation.status === "pending" && (
+                        <div className="flex gap-2">
+                          <form
+                            action={`/api/reservations/${reservation._id}`}
+                            method="PATCH"
+                          >
+                            <input
+                              type="hidden"
+                              name="status"
+                              value="confirmed"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+                            >
+                              Confirm
+                            </button>
+                          </form>
+                          <form
+                            action={`/api/reservations/${reservation._id}`}
+                            method="PATCH"
+                          >
+                            <input
+                              type="hidden"
+                              name="status"
+                              value="cancelled"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                            >
+                              Reject
+                            </button>
+                          </form>
+                        </div>
+                      )}
+                      {reservation.status === "confirmed" && (
+                        <form
+                          action={`/api/reservations/${reservation._id}`}
+                          method="PATCH"
+                        >
+                          <input type="hidden" name="status" value="completed" />
+                          <button
+                            type="submit"
+                            className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-xs"
+                          >
+                            Mark Complete
+                          </button>
+                        </form>
+                      )}
                     </td>
                   </tr>
                 );

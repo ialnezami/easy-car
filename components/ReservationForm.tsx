@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 interface ReservationFormProps {
   vehicleId: string;
@@ -15,6 +17,7 @@ export default function ReservationForm({
   reservations,
 }: ReservationFormProps) {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
@@ -25,6 +28,16 @@ export default function ReservationForm({
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.user && session.user.role === "client") {
+      setFormData({
+        ...formData,
+        customerName: session.user.name || "",
+        customerEmail: session.user.email || "",
+      });
+    }
+  }, [session]);
   const [pricing, setPricing] = useState<{
     basePrice: number;
     discountAmount: number;
@@ -82,6 +95,42 @@ export default function ReservationForm({
       setLoading(false);
     }
   };
+
+  // Show login prompt if not authenticated
+  if (status === "loading") {
+    return (
+      <div className="p-4 bg-gray-50 rounded-lg">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session || session.user.role !== "client") {
+    return (
+      <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Sign In to Book
+        </h2>
+        <p className="text-gray-600 mb-4">
+          You need to be signed in as a client to make a reservation.
+        </p>
+        <div className="flex gap-3">
+          <Link
+            href="/auth/signin"
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/auth/register"
+            className="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
