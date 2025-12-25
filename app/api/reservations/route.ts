@@ -27,8 +27,18 @@ export async function GET(request: NextRequest) {
       query.vehicleId = new ObjectId(vehicleId);
     }
     
-    // If not authenticated, only show confirmed reservations
-    if (!session) {
+    // Filter by user role
+    if (session) {
+      if (session.user.role === "client") {
+        query.userId = new ObjectId(session.user.id);
+      } else if (session.user.role === "manager" || session.user.role === "admin") {
+        // Managers see all reservations for their agency
+        if (agencyId) {
+          query.agencyId = new ObjectId(agencyId);
+        }
+      }
+    } else {
+      // Public users only see confirmed reservations
       query.status = "confirmed";
     }
 
@@ -44,6 +54,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Require client authentication
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "client") {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in as a client." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = reservationSchema.parse(body);
 
@@ -63,10 +82,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check availability
+    // Check if vehicle is available
+    if (!vehicle.isAvailable) {
+      return NextResponse.json(
+        { error: "This vehicle is currently not available for rental" },
+        { status: 400 }
+      );
+    }
+
+    // Check date availability
     const existingReservations = await reservationsCollection
       .find({
         vehicleId: new ObjectId(validatedData.vehicleId),
+        status: { $in: ["pending", "confirmed"] },
       })
       .toArray();
 
@@ -109,6 +137,7 @@ export async function POST(request: NextRequest) {
     const reservation = {
       agencyId: vehicle.agencyId,
       vehicleId: new ObjectId(validatedData.vehicleId),
+      userId: new ObjectId(session.user.id),
       customerName: validatedData.customerName,
       customerEmail: validatedData.customerEmail,
       customerPhone: validatedData.customerPhone,

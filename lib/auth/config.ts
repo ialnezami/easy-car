@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id?.toString(),
           email: user.email,
           name: user.name,
-          agencyId: user.agencyId.toString(),
+          agencyId: user.agencyId?.toString(),
           role: user.role,
         };
       },

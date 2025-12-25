@@ -56,6 +56,7 @@ export interface Reservation {
   _id?: ObjectId;
   agencyId: ObjectId;
   vehicleId: ObjectId;
+  userId?: ObjectId; // Client user ID if logged in
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -76,8 +77,9 @@ export interface User {
   email: string;
   password: string;
   name: string;
-  agencyId: ObjectId;
-  role: "manager" | "admin";
+  agencyId?: ObjectId; // Only for managers/admins
+  role: "manager" | "admin" | "client";
+  phone?: string;
   createdAt: Date;
   updatedAt: Date;
 }
