@@ -16,8 +16,9 @@ A modern car rental platform built with Next.js, MongoDB, and Vercel. Each car r
 ### Prerequisites
 
 - Node.js 18+ 
-- MongoDB Atlas account or local MongoDB instance
+- MongoDB Atlas account, local MongoDB instance, or Docker (recommended for testing)
 - npm or yarn
+- Docker Desktop (optional, for local MongoDB)
 
 ### Installation
 
@@ -32,15 +33,43 @@ cd easy-car
 npm install
 ```
 
-3. Set up environment variables:
+3. Set up MongoDB:
+
+**Option A: Using Docker (Recommended for Testing)**
 ```bash
+# Quick start (automated setup)
+./scripts/quick-start-docker.sh
+
+# Or manual setup:
+# Start MongoDB with Docker Compose
+docker-compose up -d
+
+# Copy Docker environment file
+cp .env.docker.example .env.local
+```
+
+**Option B: Using MongoDB Atlas**
+```bash
+# Copy standard environment file
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` with your MongoDB URI and NextAuth secret:
+**Option C: Using Local MongoDB**
+```bash
+# Copy standard environment file
+cp .env.local.example .env.local
+# Update MONGODB_URI to: mongodb://localhost:27017/easy-car
+```
+
+Edit `.env.local` with your configuration:
 - `MONGODB_URI`: Your MongoDB connection string
+  - Docker: `mongodb://admin:admin123@localhost:27017/easy-car?authSource=admin`
+  - Atlas: Your Atlas connection string
+  - Local: `mongodb://localhost:27017/easy-car`
 - `NEXTAUTH_URL`: Your app URL (http://localhost:3000 for development)
 - `NEXTAUTH_SECRET`: Generate a secret key (you can use `openssl rand -base64 32`)
+
+> 💡 **Tip**: See [DOCKER.md](./DOCKER.md) for detailed Docker setup instructions.
 
 4. Create initial admin user and agency:
 ```bash
@@ -99,9 +128,27 @@ easy-car/
 - Availability checking
 - Responsive design
 
+## Docker Commands
+
+When using Docker for MongoDB:
+
+```bash
+# Start MongoDB
+npm run docker:up
+
+# Stop MongoDB
+npm run docker:down
+
+# View logs
+npm run docker:logs
+
+# Test Docker setup
+npm run docker:test
+```
+
 ## Environment Variables
 
-See `.env.local.example` for required environment variables.
+See `.env.local.example` or `.env.docker.example` for required environment variables.
 
 ## Deployment
 

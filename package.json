@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-indexes": "tsx scripts/setup-indexes.ts"
+    "setup-indexes": "tsx scripts/setup-indexes.ts",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:test": "./scripts/test-docker-setup.sh"
   },
   "dependencies": {
     "next": "^14.2.0",
