@@ -52,7 +52,13 @@ Example:
 npx tsx scripts/create-admin.ts agence1 "Agency 1" admin@agence1.com admin123 "Admin User"
 ```
 
-5. Run the development server:
+5. Set up database indexes (recommended for performance):
+```bash
+npm run setup-indexes
+```
+Or call the API endpoint: `GET /api/setup`
+
+6. Run the development server:
 ```bash
 npm run dev
 ```

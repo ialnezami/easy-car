@@ -17,7 +17,7 @@
   - [x] Vehicle model
   - [x] Reservation model
   - [x] User model (for agency managers and clients)
-- [ ] Set up database indexes for performance (can be optimized later)
+- [x] Set up database indexes for performance
 
 ### 1.3 Vercel Configuration
 - [ ] Create Vercel project (manual deployment step)
