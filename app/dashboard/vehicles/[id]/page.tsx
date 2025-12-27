@@ -32,6 +32,7 @@ export default function EditVehiclePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     fetchVehicle();
@@ -108,6 +109,16 @@ export default function EditVehiclePage() {
       ...formData,
       images: formData.images.filter((_, i) => i !== index),
     });
+  };
+
+  const handleImageUpload = (url: string) => {
+    if (!formData.images.includes(url)) {
+      setFormData({
+        ...formData,
+        images: [...formData.images, url],
+      });
+      setUploadError("");
+    }
   };
 
   const addFeature = () => {

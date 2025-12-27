@@ -28,6 +28,7 @@ export default function NewVehiclePage() {
   const [feature, setFeature] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +66,16 @@ export default function NewVehiclePage() {
         images: [...formData.images, imageUrl],
       });
       setImageUrl("");
+    }
+  };
+
+  const handleImageUpload = (url: string) => {
+    if (!formData.images.includes(url)) {
+      setFormData({
+        ...formData,
+        images: [...formData.images, url],
+      });
+      setUploadError("");
     }
   };
 
@@ -320,43 +331,72 @@ export default function NewVehiclePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Images
           </label>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="Image URL"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+          
+          {/* Cloudinary Upload */}
+          <div className="mb-3">
+            <ImageUpload
+              onUploadComplete={handleImageUpload}
+              onError={(err) => setUploadError(err)}
+              maxImages={10}
+              existingImages={formData.images}
             />
-            <button
-              type="button"
-              onClick={addImage}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
-              Add
-            </button>
+            {uploadError && (
+              <p className="mt-1 text-sm text-red-600">{uploadError}</p>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.images.map((img, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={img}
-                  alt={`Vehicle ${index + 1}`}
-                  className="h-20 w-20 object-cover rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs"
-                >
-                  ×
-                </button>
+
+          {/* Manual URL Input (Alternative) */}
+          <div className="mb-3">
+            <p className="text-xs text-gray-500 mb-1">Or add image URL:</p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              />
+              <button
+                type="button"
+                onClick={addImage}
+                disabled={!imageUrl}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Add URL
+              </button>
+            </div>
+          </div>
+
+          {/* Image Preview Grid */}
+          {formData.images.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-2">
+                {formData.images.length} image{formData.images.length !== 1 ? "s" : ""} added
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {formData.images.map((img, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={img}
+                      alt={`Vehicle ${index + 1}`}
+                      className="h-24 w-full object-cover rounded border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      title="Remove image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         <div>
