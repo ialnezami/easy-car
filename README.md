@@ -11,6 +11,25 @@ A modern car rental platform built with Next.js, MongoDB, and Vercel. Each car r
 - **Styling**: Tailwind CSS
 - **Deployment**: Vercel
 
+## 🚀 Quick Start with Docker
+
+**Before starting, make sure Docker Desktop is running!**
+
+```bash
+# Automated setup (recommended)
+./scripts/check-and-start.sh
+
+# Or manual setup:
+docker-compose up -d
+cp .env.docker.example .env.local  # or use existing .env.local
+npm install
+npm run setup-indexes
+npx tsx scripts/create-admin.ts agence1 "Agency 1" admin@agence1.com admin123 "Admin User"
+npm run dev
+```
+
+See [QUICK-START.md](./QUICK-START.md) for detailed testing guide.
+
 ## Getting Started
 
 ### Prerequisites
