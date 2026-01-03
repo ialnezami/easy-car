@@ -64,6 +64,9 @@ export default async function ClientDashboardPage() {
                   <p className="text-xs text-slate-500">{session.user.email}</p>
                 </div>
               </div>
+              <Link href="/client/profile" className="btn-secondary text-sm">
+                Profile
+              </Link>
               <Link href="/api/auth/signout" className="btn-secondary text-sm">
                 Sign Out
               </Link>

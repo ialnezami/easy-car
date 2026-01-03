@@ -40,6 +40,12 @@ export default async function AdminLayout({
                 </div>
               </div>
               <Link
+                href="/admin/profile"
+                className="btn-secondary text-sm"
+              >
+                Profile
+              </Link>
+              <Link
                 href="/api/auth/signout"
                 className="btn-secondary text-sm"
               >

@@ -30,8 +30,8 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    // Client dashboard routes - only clients can access
-    if (pathname.startsWith("/client/dashboard")) {
+    // Client dashboard and profile routes - only clients can access
+    if (pathname.startsWith("/client/dashboard") || pathname.startsWith("/client/profile")) {
       if (!token || token.role !== "client") {
         // Redirect managers to their dashboard
         if (token?.role === "manager") {
@@ -63,8 +63,8 @@ export default withAuth(
           return !!token && token.role === "manager" && !!token.agencyId;
         }
         
-        // Protect client dashboard routes
-        if (pathname.startsWith("/client/dashboard")) {
+        // Protect client dashboard and profile routes
+        if (pathname.startsWith("/client/dashboard") || pathname.startsWith("/client/profile")) {
           return !!token && token.role === "client";
         }
         
@@ -75,7 +75,12 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*", "/client/dashboard/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/dashboard/:path*",
+    "/client/dashboard/:path*",
+    "/client/profile/:path*",
+  ],
 };
 
 

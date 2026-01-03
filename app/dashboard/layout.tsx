@@ -50,6 +50,12 @@ export default async function DashboardLayout({
                 </div>
               </div>
               <Link
+                href="/dashboard/profile"
+                className="btn-secondary text-sm"
+              >
+                Profile
+              </Link>
+              <Link
                 href="/api/auth/signout"
                 className="btn-secondary text-sm"
               >
