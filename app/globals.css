@@ -14,10 +14,6 @@
   }
 }
 
-* {
-  @apply border-border;
-}
-
 body {
   @apply bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20;
   @apply text-slate-900;
