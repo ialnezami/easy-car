@@ -16,9 +16,12 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Normalize email: trim whitespace and convert to lowercase
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+
         const usersCollection = await getUsersCollection();
         const user = await usersCollection.findOne({
-          email: credentials.email,
+          email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
         });
 
         if (!user) {
