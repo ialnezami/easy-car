@@ -9,7 +9,8 @@ import Image from "next/image";
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user.agencyId) {
+  // Only managers can access this page
+  if (!session || session.user.role !== "manager" || !session.user.agencyId) {
     redirect("/auth/signin");
   }
 

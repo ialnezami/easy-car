@@ -31,8 +31,16 @@ export default async function ClientDashboardPage() {
 
   const vehicleMap = new Map(vehicles.map((v) => [v._id?.toString(), v]));
 
+  // Calculate statistics
+  const totalReservations = reservations.length;
+  const confirmedReservations = reservations.filter((r) => r.status === "confirmed").length;
+  const pendingReservations = reservations.filter((r) => r.status === "pending").length;
+  const totalSpent = reservations
+    .filter((r) => r.status !== "cancelled")
+    .reduce((sum, r) => sum + r.totalPrice, 0);
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       {/* Navigation */}
       <nav className="glass border-b border-slate-200/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -66,7 +74,7 @@ export default async function ClientDashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-primary-600 transition-colors"
@@ -77,6 +85,64 @@ export default async function ClientDashboardPage() {
             Browse More Vehicles
           </Link>
         </div>
+
+        {/* Statistics Cards */}
+        {totalReservations > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Total Bookings</p>
+                  <p className="text-2xl font-display font-bold text-slate-900">{totalReservations}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Confirmed</p>
+                  <p className="text-2xl font-display font-bold text-success-600">{confirmedReservations}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-success-500 to-success-600 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Pending</p>
+                  <p className="text-2xl font-display font-bold text-warning-600">{pendingReservations}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-warning-500 to-warning-600 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Total Spent</p>
+                  <p className="text-2xl font-display font-bold text-slate-900">${totalSpent.toFixed(2)}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-8">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-2">

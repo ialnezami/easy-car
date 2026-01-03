@@ -29,10 +29,12 @@ export default function SignInPage() {
       } else {
         // Redirect based on role
         const role = (result as any)?.role || "client";
-        if (role === "client") {
-          router.push("/client/dashboard");
-        } else {
+        if (role === "admin") {
+          router.push("/admin");
+        } else if (role === "manager") {
           router.push("/dashboard");
+        } else {
+          router.push("/client/dashboard");
         }
         router.refresh();
       }

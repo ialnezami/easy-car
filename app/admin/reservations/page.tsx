@@ -1,50 +1,103 @@
-import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import {
   getReservationsCollection,
   getVehiclesCollection,
+  getAgenciesCollection,
 } from "@/lib/db/models";
 import { ObjectId } from "mongodb";
 import { format } from "date-fns";
 
-export default async function ReservationsPage() {
+export default async function AdminReservationsPage({
+  searchParams,
+}: {
+  searchParams: { status?: string };
+}) {
   const session = await getServerSession(authOptions);
 
-  // Only managers can access this page
-  if (!session || session.user.role !== "manager" || !session.user.agencyId) {
-    redirect("/auth/signin");
+  if (!session || session.user.role !== "admin") {
+    return null;
   }
 
   const reservationsCollection = await getReservationsCollection();
+  const query: any = {};
+  
+  if (searchParams.status) {
+    query.status = searchParams.status;
+  }
+
   const reservations = await reservationsCollection
-    .find({
-      agencyId: new ObjectId(session.user.agencyId),
-    })
+    .find(query)
     .sort({ createdAt: -1 })
     .toArray();
 
   const vehiclesCollection = await getVehiclesCollection();
-  const vehicleIds = reservations.map((r) => r.vehicleId);
-  const vehicles = await vehiclesCollection
-    .find({
-      _id: { $in: vehicleIds },
-    })
-    .toArray();
+  const agenciesCollection = await getAgenciesCollection();
 
-  const vehicleMap = new Map(
-    vehicles.map((v) => [v._id?.toString(), v])
-  );
+  const vehicleIds = reservations.map((r) => r.vehicleId);
+  const agencyIds = reservations.map((r) => r.agencyId);
+
+  const [vehicles, agencies] = await Promise.all([
+    vehiclesCollection.find({ _id: { $in: vehicleIds } }).toArray(),
+    agenciesCollection.find({ _id: { $in: agencyIds } }).toArray(),
+  ]);
+
+  const vehicleMap = new Map(vehicles.map((v) => [v._id?.toString(), v]));
+  const agencyMap = new Map(agencies.map((a) => [a._id?.toString(), a]));
 
   return (
     <div>
       <div className="mb-8">
         <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-2">
-          Reservations
+          All Reservations
         </h2>
         <p className="text-slate-600">
-          Manage and track all vehicle reservations
+          View and manage reservations across all agencies
         </p>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 mb-6 border-b border-slate-200">
+        <a
+          href="/admin/reservations"
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            !searchParams.status
+              ? "border-primary-500 text-primary-600"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          All
+        </a>
+        <a
+          href="/admin/reservations?status=pending"
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            searchParams.status === "pending"
+              ? "border-warning-500 text-warning-600"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Pending
+        </a>
+        <a
+          href="/admin/reservations?status=confirmed"
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            searchParams.status === "confirmed"
+              ? "border-success-500 text-success-600"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Confirmed
+        </a>
+        <a
+          href="/admin/reservations?status=completed"
+          className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors ${
+            searchParams.status === "completed"
+              ? "border-info-500 text-info-600"
+              : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          Completed
+        </a>
       </div>
 
       {reservations.length === 0 ? (
@@ -55,9 +108,13 @@ export default async function ReservationsPage() {
             </svg>
           </div>
           <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
-            No reservations yet
+            No reservations found
           </h3>
-          <p className="text-slate-600">Reservations will appear here once customers start booking.</p>
+          <p className="text-slate-600">
+            {searchParams.status
+              ? `No ${searchParams.status} reservations.`
+              : "No reservations have been made yet."}
+          </p>
         </div>
       ) : (
         <div className="card overflow-hidden">
@@ -65,6 +122,9 @@ export default async function ReservationsPage() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                 <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    Agency
+                  </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Vehicle
                   </th>
@@ -80,18 +140,19 @@ export default async function ReservationsPage() {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
                 {reservations.map((reservation) => {
-                  const vehicle = vehicleMap.get(
-                    reservation.vehicleId.toString()
-                  );
+                  const vehicle = vehicleMap.get(reservation.vehicleId.toString());
+                  const agency = agencyMap.get(reservation.agencyId.toString());
                   return (
                     <tr key={reservation._id?.toString()} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-slate-900">
+                          {agency?.name || "Unknown"}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="font-semibold text-slate-900">
                           {vehicle
@@ -106,9 +167,6 @@ export default async function ReservationsPage() {
                           </div>
                           <div className="text-sm text-slate-600">
                             {reservation.customerEmail}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {reservation.customerPhone}
                           </div>
                         </div>
                       </td>
@@ -125,11 +183,6 @@ export default async function ReservationsPage() {
                         <div className="text-lg font-display font-bold text-slate-900">
                           ${reservation.totalPrice.toFixed(2)}
                         </div>
-                        {reservation.discountAmount > 0 && (
-                          <div className="text-xs text-success-600 font-medium">
-                            Saved ${reservation.discountAmount.toFixed(2)}
-                          </div>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {reservation.status === "confirmed" ? (
@@ -140,41 +193,6 @@ export default async function ReservationsPage() {
                           <span className="badge-error">Cancelled</span>
                         ) : (
                           <span className="badge-info">Completed</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {reservation.status === "pending" && (
-                          <div className="flex gap-2">
-                            <form
-                              action={`/api/reservations/${reservation._id}`}
-                              method="PATCH"
-                            >
-                              <input type="hidden" name="status" value="confirmed" />
-                              <button type="submit" className="btn-success text-xs px-3 py-1.5">
-                                Confirm
-                              </button>
-                            </form>
-                            <form
-                              action={`/api/reservations/${reservation._id}`}
-                              method="PATCH"
-                            >
-                              <input type="hidden" name="status" value="cancelled" />
-                              <button type="submit" className="btn-danger text-xs px-3 py-1.5">
-                                Reject
-                              </button>
-                            </form>
-                          </div>
-                        )}
-                        {reservation.status === "confirmed" && (
-                          <form
-                            action={`/api/reservations/${reservation._id}`}
-                            method="PATCH"
-                          >
-                            <input type="hidden" name="status" value="completed" />
-                            <button type="submit" className="btn-secondary text-xs px-3 py-1.5">
-                              Complete
-                            </button>
-                          </form>
                         )}
                       </td>
                     </tr>
