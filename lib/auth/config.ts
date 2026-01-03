@@ -50,8 +50,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.agencyId = (user as any).agencyId;
         token.role = (user as any).role;
-        token.email = user.email;
-        token.name = user.name;
+        token.email = user.email || undefined;
+        token.name = user.name || undefined;
       }
       return token;
     },
