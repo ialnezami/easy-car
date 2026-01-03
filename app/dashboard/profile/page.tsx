@@ -7,7 +7,17 @@ import { useSession } from "next-auth/react";
 
 export default function ManagerProfilePage() {
   const router = useRouter();
-  const { data: session, update } = useSession();
+  const sessionResult = typeof window !== "undefined" ? useSession() : { data: null, update: undefined, status: "loading" };
+  const session = sessionResult?.data;
+  const update = sessionResult?.update;
+  
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (sessionResult?.status === "unauthenticated") {
+      router.push("/auth/signin");
+    }
+  }, [sessionResult?.status, router]);
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -111,7 +121,9 @@ export default function ManagerProfilePage() {
         confirmPassword: "",
       });
       
-      await update();
+      if (update) {
+        await update();
+      }
       router.refresh();
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -120,7 +132,7 @@ export default function ManagerProfilePage() {
     }
   };
 
-  if (loading) {
+  if (loading || sessionResult?.status === "loading" || !session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-slate-600">Loading...</p>
