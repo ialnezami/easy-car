@@ -8,9 +8,14 @@ export default async function HomePage() {
     const agenciesCollection = await getAgenciesCollection();
     const results = await agenciesCollection
       .find({})
-      .project({ slug: 1, name: 1 })
+      .project({ slug: 1, name: 1, _id: 0 })
       .toArray();
-    agencies = results as Array<{ slug: string; name: string }>;
+    
+    // Map MongoDB documents to typed objects
+    agencies = results.map((doc: any) => ({
+      slug: doc.slug as string,
+      name: doc.name as string,
+    }));
   } catch (error) {
     console.error("Error fetching agencies:", error);
   }
