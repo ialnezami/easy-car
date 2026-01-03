@@ -67,12 +67,18 @@ export async function PATCH(
       status = formData.get("status") as string;
     }
 
-    if (!["pending", "confirmed", "cancelled", "completed"].includes(status)) {
+    // Validate and narrow the type
+    const validStatuses = ["pending", "confirmed", "cancelled", "completed"] as const;
+    type ReservationStatus = typeof validStatuses[number];
+    
+    if (!validStatuses.includes(status as ReservationStatus)) {
       return NextResponse.json(
         { error: "Invalid status" },
         { status: 400 }
       );
     }
+
+    const reservationStatus: ReservationStatus = status as ReservationStatus;
 
     const reservationsCollection = await getReservationsCollection();
     
@@ -92,7 +98,7 @@ export async function PATCH(
       { _id: new ObjectId(params.id) },
       {
         $set: {
-          status,
+          status: reservationStatus,
           updatedAt: new Date(),
         },
       }
