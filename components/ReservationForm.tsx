@@ -31,11 +31,11 @@ export default function ReservationForm({
 
   useEffect(() => {
     if (session?.user && session.user.role === "client") {
-      setFormData({
-        ...formData,
+      setFormData((prev) => ({
+        ...prev,
         customerName: session.user.name || "",
         customerEmail: session.user.email || "",
-      });
+      }));
     }
   }, [session]);
   const [pricing, setPricing] = useState<{
