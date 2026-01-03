@@ -144,3 +144,4 @@ lsof -ti:3000 | xargs kill -9
 5. Test discount application
 6. Verify data persistence after restart
 
+

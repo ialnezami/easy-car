@@ -102,3 +102,4 @@ echo "   Password: admin123"
 echo ""
 echo "🛑 To stop MongoDB: npm run docker:down"
 
+

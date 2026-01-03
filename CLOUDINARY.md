@@ -185,3 +185,4 @@ For production, consider upgrading based on usage.
 - [Cloudinary Support](https://support.cloudinary.com)
 - [Next.js Image Optimization](https://nextjs.org/docs/app/api-reference/components/image)
 
+
