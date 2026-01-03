@@ -96,12 +96,12 @@
 - [x] Add client dashboard for viewing bookings
 
 ### 4.3 Search & Filtering
-- [ ] Add search functionality (basic filtering available)
-- [ ] Implement filter by:
-  - [ ] Vehicle type/category
-  - [ ] Price range
-  - [ ] Availability dates
-- [ ] Add sorting options
+- [x] Add search functionality (basic filtering available)
+- [x] Implement filter by:
+  - [x] Vehicle type/category (transmission, fuel type, seats)
+  - [x] Price range
+  - [x] Availability dates
+- [x] Add sorting options (price, year, name)
 
 ## Phase 5: Data Management & Business Logic
 

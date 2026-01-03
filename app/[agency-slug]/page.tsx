@@ -1,14 +1,29 @@
 import { notFound } from "next/navigation";
-import { getAgenciesCollection, getVehiclesCollection } from "@/lib/db/models";
-import { ObjectId } from "mongodb";
+import { 
+  getAgenciesCollection, 
+  getVehiclesCollection,
+  getReservationsCollection 
+} from "@/lib/db/models";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import SearchAndFilter to avoid SSR issues with useSearchParams
+const SearchAndFilterClient = dynamic(
+  () => import("@/components/SearchAndFilter"),
+  { ssr: false }
+);
+
+interface AgencyPageProps {
+  params: { "agency-slug": string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
 export default async function AgencyPage({
   params,
-}: {
-  params: { "agency-slug": string };
-}) {
+  searchParams,
+}: AgencyPageProps) {
   const agenciesCollection = await getAgenciesCollection();
   const agency = await agenciesCollection.findOne({
     slug: params["agency-slug"],
@@ -18,13 +33,116 @@ export default async function AgencyPage({
     notFound();
   }
 
+  // Extract filter parameters
+  const search = typeof searchParams.search === "string" ? searchParams.search : "";
+  const transmission = typeof searchParams.transmission === "string" ? searchParams.transmission : "";
+  const fuelType = typeof searchParams.fuelType === "string" ? searchParams.fuelType : "";
+  const minSeats = typeof searchParams.minSeats === "string" ? searchParams.minSeats : "";
+  const minPrice = typeof searchParams.minPrice === "string" ? searchParams.minPrice : "";
+  const maxPrice = typeof searchParams.maxPrice === "string" ? searchParams.maxPrice : "";
+  const sortBy = typeof searchParams.sortBy === "string" ? searchParams.sortBy : "price-asc";
+  const startDate = typeof searchParams.startDate === "string" ? searchParams.startDate : "";
+  const endDate = typeof searchParams.endDate === "string" ? searchParams.endDate : "";
+
+  // Build MongoDB query
+  const query: any = {
+    agencyId: agency._id,
+    isAvailable: true,
+  };
+
+  // Search filter (make, model, year)
+  if (search) {
+    const searchRegex = new RegExp(search, "i");
+    const searchConditions: any[] = [
+      { make: searchRegex },
+      { model: searchRegex },
+    ];
+    
+    // If search is a number, also search by year
+    if (!isNaN(Number(search))) {
+      searchConditions.push({ year: Number(search) });
+    }
+    
+    query.$or = searchConditions;
+  }
+
+  // Transmission filter
+  if (transmission) {
+    query.transmission = transmission;
+  }
+
+  // Fuel type filter
+  if (fuelType) {
+    query.fuelType = fuelType;
+  }
+
+  // Min seats filter
+  if (minSeats) {
+    query.seats = { $gte: parseInt(minSeats) };
+  }
+
+  // Price range filter
+  if (minPrice || maxPrice) {
+    const priceFilter: any = {};
+    if (minPrice) {
+      priceFilter.$gte = parseFloat(minPrice);
+    }
+    if (maxPrice) {
+      priceFilter.$lte = parseFloat(maxPrice);
+    }
+    query["pricing.daily"] = priceFilter;
+  }
+
   const vehiclesCollection = await getVehiclesCollection();
-  const vehicles = await vehiclesCollection
-    .find({
-      agencyId: agency._id,
-      isAvailable: true,
-    })
-    .toArray();
+  let vehicles = await vehiclesCollection.find(query).toArray();
+
+  // Availability date filter (check against reservations)
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const reservationsCollection = await getReservationsCollection();
+    
+    const conflictingReservations = await reservationsCollection
+      .find({
+        agencyId: agency._id,
+        status: { $in: ["pending", "confirmed"] },
+        $or: [
+          {
+            startDate: { $lte: end },
+            endDate: { $gte: start },
+          },
+        ],
+      })
+      .toArray();
+
+    const conflictingVehicleIds = new Set(
+      conflictingReservations.map((r) => r.vehicleId.toString())
+    );
+
+    vehicles = vehicles.filter(
+      (vehicle) => !conflictingVehicleIds.has(vehicle._id?.toString() || "")
+    );
+  }
+
+  // Sort vehicles
+  vehicles.sort((a, b) => {
+    switch (sortBy) {
+      case "price-desc":
+        return b.pricing.daily - a.pricing.daily;
+      case "price-asc":
+        return a.pricing.daily - b.pricing.daily;
+      case "year-desc":
+        return b.year - a.year;
+      case "year-asc":
+        return a.year - b.year;
+      case "name-asc":
+        return `${a.make} ${a.model}`.localeCompare(`${b.make} ${b.model}`);
+      case "name-desc":
+        return `${b.make} ${b.model}`.localeCompare(`${a.make} ${a.model}`);
+      default:
+        return a.pricing.daily - b.pricing.daily;
+    }
+  });
 
   return (
     <div className="min-h-screen">
@@ -64,6 +182,18 @@ export default async function AgencyPage({
           </p>
         </div>
 
+        {/* Search and Filter Component */}
+        <Suspense fallback={<div className="mb-8">Loading filters...</div>}>
+          <SearchAndFilterClient agencySlug={params["agency-slug"]} />
+        </Suspense>
+
+        {/* Results count */}
+        {vehicles.length > 0 && (
+          <div className="mb-6 text-sm text-slate-600">
+            Showing {vehicles.length} {vehicles.length === 1 ? "vehicle" : "vehicles"}
+          </div>
+        )}
+
         {vehicles.length === 0 ? (
           <div className="text-center py-20">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
@@ -72,9 +202,13 @@ export default async function AgencyPage({
               </svg>
             </div>
             <h3 className="text-2xl font-display font-semibold text-slate-900 mb-3">
-              No vehicles available
+              No vehicles found
             </h3>
-            <p className="text-slate-600">Check back soon for new additions.</p>
+            <p className="text-slate-600">
+              {search || transmission || fuelType || minSeats || minPrice || maxPrice || startDate || endDate
+                ? "Try adjusting your filters to see more results."
+                : "Check back soon for new additions."}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
