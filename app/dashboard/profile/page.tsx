@@ -34,7 +34,14 @@ export default function ManagerProfilePage() {
             agencyNamePromise = fetch("/api/admin/agencies")
               .then((res) => res.json())
               .then((agencies: any[]) => {
-                const agency = agencies.find((a: any) => a._id === profileData.agencyId);
+                // Match agency by comparing string representations of ObjectIds
+                const agency = agencies.find((a: any) => {
+                  const agencyIdStr = typeof a._id === 'string' ? a._id : a._id?.toString();
+                  const profileAgencyIdStr = typeof profileData.agencyId === 'string' 
+                    ? profileData.agencyId 
+                    : profileData.agencyId?.toString();
+                  return agencyIdStr === profileAgencyIdStr;
+                });
                 return agency?.name || "";
               })
               .catch(() => "");
