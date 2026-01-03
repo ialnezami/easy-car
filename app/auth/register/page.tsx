@@ -59,8 +59,9 @@ export default function RegisterPage() {
       if (result?.error) {
         setError("Account created but sign in failed. Please try signing in.");
       } else {
-        router.push("/client/dashboard");
-        router.refresh();
+        // Wait a moment for session to be established
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        window.location.href = "/client/dashboard";
       }
     } catch (err) {
       setError("An error occurred. Please try again.");

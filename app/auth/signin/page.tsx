@@ -9,6 +9,7 @@ export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,16 +28,22 @@ export default function SignInPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
+        // Wait for session to be established
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        
+        // Fetch session to get role
+        const sessionResponse = await fetch("/api/auth/session");
+        const session = await sessionResponse.json();
+        const role = session?.user?.role || "client";
+        
         // Redirect based on role
-        const role = (result as any)?.role || "client";
         if (role === "admin") {
-          router.push("/admin");
+          window.location.href = "/admin";
         } else if (role === "manager") {
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
         } else {
-          router.push("/client/dashboard");
+          window.location.href = "/client/dashboard";
         }
-        router.refresh();
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -105,6 +112,19 @@ export default function SignInPage() {
                   placeholder="Enter your password"
                   className="input"
                 />
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-slate-600">
+                  Remember me
+                </label>
               </div>
             </div>
 
