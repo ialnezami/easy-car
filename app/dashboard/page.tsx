@@ -22,24 +22,43 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">Vehicles</h2>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-2">
+            Vehicles
+          </h2>
+          <p className="text-slate-600">
+            Manage your fleet of rental vehicles
+          </p>
+        </div>
         <Link
           href="/dashboard/vehicles/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="btn-primary"
         >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
           Add Vehicle
         </Link>
       </div>
 
       {vehicles.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-600 mb-4">No vehicles added yet.</p>
+        <div className="card p-12 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
+            <svg className="w-10 h-10 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-display font-semibold text-slate-900 mb-2">
+            No vehicles yet
+          </h3>
+          <p className="text-slate-600 mb-6">Get started by adding your first vehicle to the fleet.</p>
           <Link
             href="/dashboard/vehicles/new"
-            className="text-blue-600 hover:text-blue-800"
+            className="btn-primary"
           >
-            Add your first vehicle →
+            Add Your First Vehicle
           </Link>
         </div>
       ) : (
@@ -47,46 +66,49 @@ export default async function DashboardPage() {
           {vehicles.map((vehicle) => (
             <div
               key={vehicle._id?.toString()}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
+              className="card overflow-hidden"
             >
-              {vehicle.images && vehicle.images.length > 0 ? (
-                <div className="relative h-48 w-full bg-gray-200">
+              <div className="relative h-56 w-full bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+                {vehicle.images && vehicle.images.length > 0 ? (
                   <Image
                     src={vehicle.images[0]}
                     alt={`${vehicle.make} ${vehicle.model}`}
                     fill
                     className="object-cover"
                   />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <svg className="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+                <div className="absolute top-4 right-4">
+                  {vehicle.isAvailable ? (
+                    <span className="badge-success">Available</span>
+                  ) : (
+                    <span className="badge-error">Unavailable</span>
+                  )}
                 </div>
-              ) : (
-                <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">No Image</span>
-                </div>
-              )}
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-display font-semibold text-slate-900 mb-3">
                   {vehicle.year} {vehicle.make} {vehicle.model}
                 </h3>
-                <div className="text-sm text-gray-600 space-y-1 mb-4">
-                  <p>License: {vehicle.licensePlate}</p>
-                  <p>Daily: ${vehicle.pricing.daily}</p>
-                  <p>
-                    Status:{" "}
-                    <span
-                      className={
-                        vehicle.isAvailable
-                          ? "text-green-600 font-medium"
-                          : "text-red-600 font-medium"
-                      }
-                    >
-                      {vehicle.isAvailable ? "Available" : "Unavailable"}
-                    </span>
-                  </p>
+                <div className="space-y-2 mb-4 text-sm text-slate-600">
+                  <div className="flex justify-between">
+                    <span>License Plate:</span>
+                    <span className="font-medium text-slate-900">{vehicle.licensePlate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Daily Rate:</span>
+                    <span className="font-semibold text-primary-600">${vehicle.pricing.daily}</span>
+                  </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-4 border-t border-slate-100">
                   <Link
                     href={`/dashboard/vehicles/${vehicle._id}`}
-                    className="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                    className="flex-1 btn-secondary text-center text-sm"
                   >
                     Edit
                   </Link>
@@ -97,7 +119,7 @@ export default async function DashboardPage() {
                   >
                     <button
                       type="submit"
-                      className="w-full px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                      className="w-full btn-danger text-sm"
                     >
                       Delete
                     </button>
