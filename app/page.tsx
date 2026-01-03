@@ -6,10 +6,11 @@ export default async function HomePage() {
   
   try {
     const agenciesCollection = await getAgenciesCollection();
-    agencies = await agenciesCollection
+    const results = await agenciesCollection
       .find({})
       .project({ slug: 1, name: 1 })
       .toArray();
+    agencies = results as Array<{ slug: string; name: string }>;
   } catch (error) {
     console.error("Error fetching agencies:", error);
   }
