@@ -10,11 +10,18 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const agencyId = searchParams.get("agencyId");
 
+    const session = await getServerSession(authOptions);
     const vehiclesCollection = await getVehiclesCollection();
     const query: any = {};
 
     if (agencyId) {
       query.agencyId = new ObjectId(agencyId);
+    }
+
+    // Only show available vehicles to public users (non-authenticated or clients)
+    // Managers and admins can see all vehicles
+    if (!session || session.user.role === "client") {
+      query.isAvailable = true;
     }
 
     const vehicles = await vehiclesCollection.find(query).toArray();
