@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "setup-indexes": "tsx scripts/setup-indexes.ts",
+    "seed": "tsx scripts/seed-database.ts",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
