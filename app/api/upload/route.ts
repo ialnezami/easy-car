@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Cloudinary
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: "easy-car/vehicles",

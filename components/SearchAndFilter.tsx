@@ -44,7 +44,7 @@ export default function SearchAndFilter({ agencySlug }: SearchAndFilterProps) {
     setLocalSortBy(sortBy);
     setLocalStartDate(startDate);
     setLocalEndDate(endDate);
-  }, [searchParams]);
+  }, [search, transmission, fuelType, minSeats, minPrice, maxPrice, sortBy, startDate, endDate, searchParams]);
 
   const updateFilters = () => {
     const params = new URLSearchParams();
