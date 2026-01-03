@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 export default function ManagerProfilePage() {
   const router = useRouter();
-  const sessionResult = typeof window !== "undefined" ? useSession() : { data: null, update: undefined, status: "loading" };
+  const sessionResult = useSession();
   const session = sessionResult?.data;
   const update = sessionResult?.update;
   
