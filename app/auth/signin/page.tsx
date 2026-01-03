@@ -126,7 +126,7 @@ export default function SignInPage() {
 
             <div className="text-center space-y-3 pt-4 border-t border-slate-200">
               <p className="text-sm text-slate-600">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/auth/register"
                   className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"

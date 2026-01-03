@@ -170,7 +170,7 @@ export default async function ClientDashboardPage() {
                           Awaiting Confirmation
                         </p>
                         <p className="text-sm text-warning-700">
-                          Your reservation is pending confirmation. You will be notified once it's confirmed.
+                          Your reservation is pending confirmation. You will be notified once it&apos;s confirmed.
                         </p>
                       </div>
                     </div>

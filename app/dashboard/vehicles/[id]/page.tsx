@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import ImageUpload from "@/components/ImageUpload";
 
 export default function EditVehiclePage() {
   const router = useRouter();
@@ -34,11 +36,7 @@ export default function EditVehiclePage() {
   const [saving, setSaving] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
-  useEffect(() => {
-    fetchVehicle();
-  }, []);
-
-  const fetchVehicle = async () => {
+  const fetchVehicle = useCallback(async () => {
     try {
       const response = await fetch(`/api/vehicles/${vehicleId}`);
       if (response.ok) {
@@ -63,7 +61,11 @@ export default function EditVehiclePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vehicleId]);
+
+  useEffect(() => {
+    fetchVehicle();
+  }, [fetchVehicle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -417,11 +419,12 @@ export default function EditVehiclePage() {
               </p>
               <div className="grid grid-cols-4 gap-2">
                 {formData.images.map((img, index) => (
-                  <div key={index} className="relative group">
-                    <img
+                  <div key={index} className="relative group h-24 w-full">
+                    <Image
                       src={img}
                       alt={`Vehicle ${index + 1}`}
-                      className="h-24 w-full object-cover rounded border border-gray-200"
+                      fill
+                      className="object-cover rounded border border-gray-200"
                     />
                     <button
                       type="button"
