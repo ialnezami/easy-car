@@ -80,6 +80,12 @@ export default async function AdminLayout({
             >
               All Reservations
             </Link>
+            <Link
+              href="/admin/analytics"
+              className="px-6 py-4 text-sm font-semibold text-slate-700 border-b-2 border-transparent hover:text-error-600 hover:border-error-500 transition-colors relative"
+            >
+              Analytics
+            </Link>
           </div>
         </div>
       </nav>
