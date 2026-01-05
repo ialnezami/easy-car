@@ -148,6 +148,8 @@ export async function POST(request: NextRequest) {
       discountCode: validatedData.discountCode || undefined,
       discountAmount: pricing.discountAmount,
       totalPrice: pricing.totalPrice,
+      driverLicenseUrl: validatedData.driverLicenseUrl || undefined,
+      idDocumentUrl: validatedData.idDocumentUrl || undefined,
       status: "pending" as const,
       createdAt: new Date(),
       updatedAt: new Date(),

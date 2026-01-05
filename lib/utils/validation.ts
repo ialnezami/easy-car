@@ -50,6 +50,8 @@ export const reservationSchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
   discountCode: z.string().optional(),
+  driverLicenseUrl: z.string().url().optional(),
+  idDocumentUrl: z.string().url().optional(),
 });
 
 export const userSchema = z.object({

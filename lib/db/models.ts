@@ -68,6 +68,13 @@ export interface Reservation {
   discountAmount: number;
   totalPrice: number;
   status: "pending" | "confirmed" | "cancelled" | "completed";
+  // Document uploads
+  driverLicenseUrl?: string;
+  idDocumentUrl?: string;
+  additionalDocuments?: Array<{
+    name: string;
+    url: string;
+  }>;
   createdAt: Date;
   updatedAt: Date;
 }

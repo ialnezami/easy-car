@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import DocumentUpload from "./DocumentUpload";
 
 interface ReservationFormProps {
   vehicleId: string;
@@ -25,9 +26,12 @@ export default function ReservationForm({
     startDate: "",
     endDate: "",
     discountCode: "",
+    driverLicenseUrl: "",
+    idDocumentUrl: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (session?.user && session.user.role === "client") {
@@ -69,6 +73,12 @@ export default function ReservationForm({
     setError("");
     setLoading(true);
 
+    // Validate required documents
+    if (!formData.driverLicenseUrl) {
+      setError("Please upload your driver's license");
+      return;
+    }
+
     try {
       const response = await fetch("/api/reservations", {
         method: "POST",
@@ -77,7 +87,14 @@ export default function ReservationForm({
         },
         body: JSON.stringify({
           vehicleId,
-          ...formData,
+          customerName: formData.customerName,
+          customerEmail: formData.customerEmail,
+          customerPhone: formData.customerPhone,
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          discountCode: formData.discountCode,
+          driverLicenseUrl: formData.driverLicenseUrl,
+          idDocumentUrl: formData.idDocumentUrl || undefined,
         }),
       });
 
@@ -234,6 +251,44 @@ export default function ReservationForm({
           />
         </div>
 
+        {/* Document Uploads */}
+        <div className="space-y-4 pt-4 border-t border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Required Documents</h3>
+          
+          <DocumentUpload
+            label="Driver's License"
+            onUploadComplete={(url) => {
+              setFormData({ ...formData, driverLicenseUrl: url });
+              setUploadErrors({ ...uploadErrors, driverLicense: "" });
+            }}
+            onError={(error) => {
+              setUploadErrors({ ...uploadErrors, driverLicense: error });
+            }}
+            required
+            uploadedUrl={formData.driverLicenseUrl}
+            maxSize={20}
+          />
+          {uploadErrors.driverLicense && (
+            <p className="text-sm text-red-600">{uploadErrors.driverLicense}</p>
+          )}
+
+          <DocumentUpload
+            label="ID Document (Optional)"
+            onUploadComplete={(url) => {
+              setFormData({ ...formData, idDocumentUrl: url });
+              setUploadErrors({ ...uploadErrors, idDocument: "" });
+            }}
+            onError={(error) => {
+              setUploadErrors({ ...uploadErrors, idDocument: error });
+            }}
+            uploadedUrl={formData.idDocumentUrl}
+            maxSize={20}
+          />
+          {uploadErrors.idDocument && (
+            <p className="text-sm text-red-600">{uploadErrors.idDocument}</p>
+          )}
+        </div>
+
         {pricing && (
           <div className="bg-gray-50 p-4 rounded-md">
             <div className="space-y-2 text-sm">
@@ -263,7 +318,7 @@ export default function ReservationForm({
 
         <button
           type="submit"
-          disabled={loading || !pricing}
+          disabled={loading || !pricing || !formData.driverLicenseUrl}
           className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         >
           {loading ? "Processing..." : "Reserve Now"}
